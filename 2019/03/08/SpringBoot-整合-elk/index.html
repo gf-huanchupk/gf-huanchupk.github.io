@@ -439,8 +439,8 @@
 </li>
 </ul>
 <h2 id="二、elk的安装"><a href="#二、elk的安装" class="headerlink" title="二、elk的安装"></a>二、elk的安装</h2><p>我们采用的 docker 镜像安装。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">下载镜像</span></span><br><span class="line">docker pull sebp/elk</span><br></pre></td></tr></table></figure>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">启动镜像 , 指定es的内存</span></span><br><span class="line">docker run -e ES_JAVA_OPTS="-Xms256m -Xmx256m" -p 5601:5601 -p 5044:5044 -p 9200:9200 -p 9300:9300 -it --name elk 2fbf0a30426d</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>下载镜像</span><br><span class="line">docker pull sebp/elk</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>启动镜像 , 指定es的内存</span><br><span class="line">docker run -e ES_JAVA_OPTS="-Xms256m -Xmx256m" -p 5601:5601 -p 5044:5044 -p 9200:9200 -p 9300:9300 -it --name elk 2fbf0a30426d</span><br></pre></td></tr></table></figure>
 <p>我们访问<a href="http://127.0.0.1:5601" target="_blank" rel="noopener">http://127.0.0.1:5601</a></p>
 <p><img src="https://user-gold-cdn.xitu.io/2019/2/28/16932f622b28ce4a?w=1240&amp;h=823&amp;f=png&amp;s=190267" alt></p>
 <h2 id="三、创建工程"><a href="#三、创建工程" class="headerlink" title="三、创建工程"></a>三、创建工程</h2><p>创建工程springboot-elk ，并使用logback 记录日志。</p>
@@ -502,6 +502,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/03/08/SpringBoot-整合-elasticsearch/" rel="prev" title="SpringBoot 整合 elasticsearch">
+                SpringBoot 整合 elasticsearch <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -572,7 +576,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-count">4</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -620,7 +624,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">5</span>
+                      
+                    
+                    <span class="site-state-item-count">6</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
