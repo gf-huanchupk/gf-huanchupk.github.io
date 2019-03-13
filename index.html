@@ -321,6 +321,245 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/13/SpringCloud-Alibaba-Nacos-入门/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="程序员果果">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="程序员果果的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/03/13/SpringCloud-Alibaba-Nacos-入门/" class="post-title-link" itemprop="url">SpringCloud Alibaba Nacos 入门</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-13 11:51:33 / 修改时间：11:55:08" itemprop="dateCreated datePublished" datetime="2019-03-13T11:51:33+08:00">2019-03-13</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/SpringCloudAlibaba/" itemprop="url" rel="index"><span itemprop="name">SpringCloudAlibaba</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h2><p>阿里巴巴在2018年7月份发布Nacos, Nacos是一个更易于构建云原生应用的动态服务发现、配置管理和服务管理平台。并表示在6-8个月完成到生产可用的0.8版本,目前版本是0.9版本。</p>
+<h2 id="Nacos提供四大功能"><a href="#Nacos提供四大功能" class="headerlink" title="Nacos提供四大功能"></a>Nacos提供四大功能</h2><ul>
+<li><p><strong>服务发现和服务健康检查</strong></p>
+<p>Nacos使服务更容易注册自己并通过DNS或HTTP接口发现其他服务。Nacos还提供服务的实时健康检查，以防止向不健康的主机或服务实例发送请求。</p>
+</li>
+<li><p><strong>动态配置管理</strong></p>
+<p>动态配置服务允许您在所有环境中以集中和动态的方式管理所有服务的配置。Nacos消除了在更新配置时重新部署应用程序和服务的需要，这使配置更改更加高效和灵活。</p>
+</li>
+<li><p><strong>动态DNS服务</strong></p>
+<p>动态 DNS 服务支持权重路由，让您更容易地实现中间层负载均衡、更灵活的路由策略、流量控制以及数据中心内网的简单DNS解析服务。动态DNS服务还能让您更容易地实现以 DNS 协议为基础的服务发现，以帮助您消除耦合到厂商私有服务发现 API 上的风险。</p>
+</li>
+<li><p><strong>服务和元数据管理</strong></p>
+<p>Nacos提供易于使用的服务仪表板，可帮助您管理服务元数据，配置，kubernetes DNS，服务运行状况和指标统计。</p>
+</li>
+</ul>
+<p>##安装<br>Nacos安装可以采用如下两种方式：</p>
+<ul>
+<li>1.官网下载稳定版本解压使用。</li>
+<li>2.下载源代码编译使用，目前最新的版本是0.9.0版本。</li>
+</ul>
+<p>本文使用第一种方式，到Nacos的稳定版本下载地址<a href="https://github.com/alibaba/nacos/releases，下载最新版，下载后解压即安装完成，然后进入解压目录后的bin目录。" target="_blank" rel="noopener">https://github.com/alibaba/nacos/releases，下载最新版，下载后解压即安装完成，然后进入解压目录后的bin目录。</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">unzip nacos-server-0.9.0.zip</span><br><span class="line">或者</span><br><span class="line">tar -xvf nacos-server-0.9.0.tar.gz</span><br></pre></td></tr></table></figure>
+<p>进入解压目录后的bin目录执行如下命令启动Nacos。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>Linux/Unix/Mac 下</span><br><span class="line">sh startup.sh -m standalone</span><br><span class="line"><span class="meta">#</span>Windows 下</span><br><span class="line">cmd startup.cmd</span><br></pre></td></tr></table></figure>
+<p>启动成功后，访问Nacos服务，<a href="http://localhost:8848/nacos/#/login，默认情况用户名密码都是nacos，登录页如图所示。" target="_blank" rel="noopener">http://localhost:8848/nacos/#/login，默认情况用户名密码都是nacos，登录页如图所示。</a></p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/3/13/16975299a593f73f?w=2366&amp;h=1448&amp;f=png&amp;s=197584" alt></p>
+<p>登录后如图所示。</p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/3/13/1697529d50db3581?w=2366&amp;h=1448&amp;f=png&amp;s=199876" alt></p>
+<h2 id="SpringBoot-使用-Nacos-配置管理"><a href="#SpringBoot-使用-Nacos-配置管理" class="headerlink" title="SpringBoot 使用 Nacos 配置管理"></a>SpringBoot 使用 Nacos 配置管理</h2><p>创建一个springboot项目，主要代码如下。</p>
+<h3 id="pom-xml"><a href="#pom-xml" class="headerlink" title="pom.xml"></a>pom.xml</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>nacos-config-spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.2.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="application-yml"><a href="#application-yml" class="headerlink" title="application.yml"></a>application.yml</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">spring:</span><br><span class="line">  application:</span><br><span class="line">    name: springcloud-nacos-hello</span><br><span class="line"></span><br><span class="line">nacos:</span><br><span class="line">  config:</span><br><span class="line">    server-addr: <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">8848</span></span><br></pre></td></tr></table></figure>
+<p>配置说明：</p>
+<ul>
+<li><strong>spring.application.name</strong>：配置应用名。</li>
+<li><strong>nacos.config.server-addr</strong>：Nacos server 的地址。</li>
+</ul>
+<h3 id="启动类"><a href="#启动类" class="headerlink" title="启动类"></a>启动类</h3><p>在启动类，加入 @NacosPropertySource 注解其中包含两个属性，如下：</p>
+<ul>
+<li>dataId：这个属性是需要在Nacos中配置的Data Id。</li>
+<li>autoRefreshed：为true的话开启自动更新。</li>
+</ul>
+<p>在使用Nacos做配置中心后，需要使用@NacosValue注解获取配置，使用方式与@Value一样，完整启动类代码如下所示。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@NacosPropertySource</span>(dataId = <span class="string">"springcloud-nacos-hello"</span>, autoRefreshed = <span class="keyword">true</span>)</span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SpringcloudNacosHelloApplication</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run( SpringcloudNacosHelloApplication.class, args );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@NacosValue</span>(value = <span class="string">"$&#123;test.properties.useLocalCache:false&#125;"</span>, autoRefreshed = <span class="keyword">true</span>)</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> useLocalCache;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/get"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">get</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> useLocalCache;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>启动应用，访问<a href="http://localhost:8080/get" target="_blank" rel="noopener">http://localhost:8080/get</a> ，返回配置的默认值 “false”</p>
+<h3 id="使用Nacos修改配置"><a href="#使用Nacos修改配置" class="headerlink" title="使用Nacos修改配置"></a>使用Nacos修改配置</h3><p>添加刚刚创建的data id 的服务，并将配置由 false 修改为 true，如图所示。</p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/3/13/169752a516af3b4c?w=2384&amp;h=1604&amp;f=png&amp;s=215853" alt></p>
+<p>发布后，返回配置列表，出现新添加的配置，如图所示。</p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/3/13/169752a8635fec27?w=2278&amp;h=1372&amp;f=png&amp;s=216395" alt></p>
+<p>再次访问 <a href="http://localhost:8080/get" target="_blank" rel="noopener">http://localhost:8080/get</a> ，返回值为 “true”。</p>
+<h3 id="数据源"><a href="#数据源" class="headerlink" title="数据源"></a>数据源</h3><p>经过了上边的一些简单操作，我们已经可以正常使用 Nacos 配置中心了。</p>
+<p>但是不知道你有没有想过：配置数据是存在哪里呢？</p>
+<p>我们没有对 Nacos Server 做任何配置，那么数据只有两个位置可以存储：</p>
+<ul>
+<li>内存</li>
+<li>本地数据库</li>
+</ul>
+<p>重启了 Nacos server ，你会发现原先创建的配置依然，这说明不是内存存储的。</p>
+<p>这时候我们打开NACOS_PATH/data，会发现里边有个derby-data目录，Derby 是 Java 编写的数据库，属于 Apache 的一个开源项目。我们的配置数据现在就存储在这个库中。</p>
+<p>Derby 我们并不是很熟悉，但是数据源可以改为我们熟悉的 MySQL。具体的操作步骤如下。</p>
+<ul>
+<li><ol>
+<li>创建一个名为nacos_config的 database。</li>
+</ol>
+</li>
+<li><ol start="2">
+<li>将NACOS_PATH/conf/nacos-mysql.sql中的表结构导入刚才创建的库中。</li>
+</ol>
+</li>
+<li><ol start="3">
+<li>修改NACOS_PATH/conf/application.properties文件，增加支持mysql数据源配置（目前只支持mysql），添加mysql数据源的url、用户名和密码。</li>
+</ol>
+</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">spring.datasource.platform=mysql</span><br><span class="line"></span><br><span class="line">db.num=<span class="number">1</span></span><br><span class="line">db.url<span class="number">.0</span>=jdbc:mysql:<span class="comment">//11.162.196.16:3306/nacos_devtest?characterEncoding=utf8&amp;connectTimeout=1000&amp;socketTimeout=3000&amp;autoReconnect=true</span></span><br><span class="line">db.user=root</span><br><span class="line">db.password=root</span><br></pre></td></tr></table></figure>
+<p>再以单机模式启动nacos，nacos所有写嵌入式数据库的数据都写到了mysql了。</p>
+<p>到这里SpringBoot使用Nacos配置中心就完成了，关于Nacos更多功能及详细使用，可以参看官方文档。</p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://nacos.io" target="_blank" rel="noopener">https://nacos.io</a></p>
+<p><a href="https://www.cnblogs.com/forezp/p/10136433.html" target="_blank" rel="noopener">https://www.cnblogs.com/forezp/p/10136433.html</a></p>
+<h3 id="源码下载"><a href="#源码下载" class="headerlink" title="源码下载"></a>源码下载</h3><p><a href="https://github.com/gf-huanchupk/SpringCloudAlibabaLearning" target="_blank" rel="noopener">https://github.com/gf-huanchupk/SpringCloudAlibabaLearning</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/08/SpringBoot-自定义-starter/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1876,7 +2115,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-count">8</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -1895,7 +2134,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">1</span>
+                      
+                    
+                    <span class="site-state-item-count">2</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -1930,7 +2171,15 @@
                     
                       
                     
-                    <span class="site-state-item-count">9</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
