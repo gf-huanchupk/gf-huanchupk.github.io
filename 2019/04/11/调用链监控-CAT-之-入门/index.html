@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="简介CAT 是一个实时和接近全量的监控系统，它侧重于对Java应用的监控，基本接入了美团上海所有核心应用。目前在中间件（MVC、RPC、数据库、缓存等）框架中得到广泛应用，为美团各业务线提供系统的性能指标、健康状况、监控告警等。 优势 实时处理：信息的价值会随时间锐减，尤其是事故处理过程中。 全量数据：全量采集指标数据，便于深度分析故障案例。 高可用：故障的还原与问题定位，需要高可用监控来支撑。">
+<meta name="keywords" content="Spring Cloud,Cat">
+<meta property="og:type" content="article">
+<meta property="og:title" content="调用链监控 CAT 之 入门">
+<meta property="og:url" content="http://yoursite.com/2019/04/11/调用链监控-CAT-之-入门/index.html">
+<meta property="og:site_name" content="程序员果果的博客">
+<meta property="og:description" content="简介CAT 是一个实时和接近全量的监控系统，它侧重于对Java应用的监控，基本接入了美团上海所有核心应用。目前在中间件（MVC、RPC、数据库、缓存等）框架中得到广泛应用，为美团各业务线提供系统的性能指标、健康状况、监控告警等。 优势 实时处理：信息的价值会随时间锐减，尤其是事故处理过程中。 全量数据：全量采集指标数据，便于深度分析故障案例。 高可用：故障的还原与问题定位，需要高可用监控来支撑。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/4/11/16a09f9548b6d7e3?w=2190&h=1014&f=png&s=353971">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/4/11/16a09f9b5544833d?w=2254&h=1452&f=png&s=214316">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/4/11/16a09f9f9332e5fc?w=2254&h=1452&f=png&s=377217">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/4/11/16a09fa22532bdbc?w=2628&h=1620&f=png&s=338461">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/4/11/16a09fa46d2ee6f3?w=2624&h=1608&f=png&s=654971">
+<meta property="og:updated_time" content="2019-04-11T02:05:27.797Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="调用链监控 CAT 之 入门">
+<meta name="twitter:description" content="简介CAT 是一个实时和接近全量的监控系统，它侧重于对Java应用的监控，基本接入了美团上海所有核心应用。目前在中间件（MVC、RPC、数据库、缓存等）框架中得到广泛应用，为美团各业务线提供系统的性能指标、健康状况、监控告警等。 优势 实时处理：信息的价值会随时间锐减，尤其是事故处理过程中。 全量数据：全量采集指标数据，便于深度分析故障案例。 高可用：故障的还原与问题定位，需要高可用监控来支撑。">
+<meta name="twitter:image" content="https://user-gold-cdn.xitu.io/2019/4/11/16a09f9548b6d7e3?w=2190&h=1014&f=png&s=353971">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/04/11/调用链监控-CAT-之-入门/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>调用链监控 CAT 之 入门 | 程序员果果的博客</title>
+  
+
+
+
+
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?48ba4ef106e9b2430083b8ec78a1831e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">程序员果果的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/11/调用链监控-CAT-之-入门/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="程序员果果">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="程序员果果的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">调用链监控 CAT 之 入门
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-11 10:03:39 / 修改时间：10:05:27" itemprop="dateCreated datePublished" datetime="2019-04-11T10:03:39+08:00">2019-04-11</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/SpringCloud/" itemprop="url" rel="index"><span itemprop="name">SpringCloud</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>CAT 是一个实时和接近全量的监控系统，它侧重于对Java应用的监控，基本接入了美团上海所有核心应用。目前在中间件（MVC、RPC、数据库、缓存等）框架中得到广泛应用，为美团各业务线提供系统的性能指标、健康状况、监控告警等。</p>
+<h2 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h2><ul>
+<li>实时处理：信息的价值会随时间锐减，尤其是事故处理过程中。</li>
+<li>全量数据：全量采集指标数据，便于深度分析故障案例。</li>
+<li>高可用：故障的还原与问题定位，需要高可用监控来支撑。</li>
+<li>故障容忍：故障不影响业务正常运转、对业务透明。</li>
+<li>高吞吐：海量监控数据的收集，需要高吞吐能力做保证。</li>
+<li>可扩展：支持分布式、跨 IDC 部署，横向扩展的监控系统。</li>
+</ul>
+<h2 id="开源产品比较"><a href="#开源产品比较" class="headerlink" title="开源产品比较"></a>开源产品比较</h2><p><img src="https://user-gold-cdn.xitu.io/2019/4/11/16a09f9548b6d7e3?w=2190&amp;h=1014&amp;f=png&amp;s=353971" alt></p>
+<h2 id="快速上手"><a href="#快速上手" class="headerlink" title="快速上手"></a>快速上手</h2><h3 id="本地部署"><a href="#本地部署" class="headerlink" title="本地部署"></a>本地部署</h3><h4 id="步骤1：部署tomcat"><a href="#步骤1：部署tomcat" class="headerlink" title="步骤1：部署tomcat"></a>步骤1：部署tomcat</h4><p>准备一个tomcat，修改 tomcat conf 目录下 server.xml，防中文乱码。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Connector port="8080" protocol="HTTP/1.1"</span><br><span class="line">           URIEncoding="utf-8"    connectionTimeout="20000"</span><br><span class="line">               redirectPort="8443" /&gt;  <span class="comment">&lt;!-- 增加  URIEncoding="utf-8"  --&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="步骤2：程序对于-data-目录具体读写权限（重要）"><a href="#步骤2：程序对于-data-目录具体读写权限（重要）" class="headerlink" title="步骤2：程序对于/data/目录具体读写权限（重要）"></a>步骤2：程序对于/data/目录具体读写权限（重要）</h4><ul>
+<li><p>Linux</p>
+<ul>
+<li>要求/data/目录能进行读写操作，如果/data/目录不能写，建议使用linux的软链接链接到一个固定可写的目录。</li>
+<li>此目录会存一些CAT必要的配置文件以及运行时候的数据存储目录。</li>
+<li>CAT支持CAT_HOME环境变量，可以通过JVM参数修改默认的路径。</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir /data</span><br><span class="line">chmod -R 777 /data/</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>Windows</p>
+<p>对程序运行盘下的/data/appdatas/cat和/data/applogs/cat有读写权限。例如cat服务运行在e盘的tomcat中，则需要对e:/data/appdatas/cat和e:/data/applogs/cat有读写权限。</p>
+</li>
+</ul>
+<h4 id="步骤3：-配置-data-appdatas-cat-client-xml-CAT-HOME-client-xml"><a href="#步骤3：-配置-data-appdatas-cat-client-xml-CAT-HOME-client-xml" class="headerlink" title="步骤3： 配置/data/appdatas/cat/client.xml ($CAT_HOME/client.xml)"></a>步骤3： 配置/data/appdatas/cat/client.xml ($CAT_HOME/client.xml)</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">config</span> <span class="attr">mode</span>=<span class="string">"client"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servers</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">server</span> <span class="attr">ip</span>=<span class="string">"127.0.0.1"</span> <span class="attr">port</span>=<span class="string">"2280"</span> <span class="attr">http-port</span>=<span class="string">"8080"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">servers</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">config</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>此配置文件的作用是所有的客户端都需要一个地址指向CAT的服务端。</p>
+<h4 id="步骤4：-安装CAT的数据库"><a href="#步骤4：-安装CAT的数据库" class="headerlink" title="步骤4： 安装CAT的数据库"></a>步骤4： 安装CAT的数据库</h4><p>下载cat源码包：<a href="https://codeload.github.com/dianping/cat/" target="_blank" rel="noopener">https://codeload.github.com/dianping/cat/</a><br>解压后，数据库的脚本文件为 script/CatApplication.sql</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -uroot -Dcat &lt; CatApplication.sql</span><br></pre></td></tr></table></figure>
+<h4 id="步骤5：-配置-data-appdatas-cat-datasources-xml-CAT-HOME-datasources-xml"><a href="#步骤5：-配置-data-appdatas-cat-datasources-xml-CAT-HOME-datasources-xml" class="headerlink" title="步骤5： 配置/data/appdatas/cat/datasources.xml($CAT_HOME/datasources.xml)"></a>步骤5： 配置/data/appdatas/cat/datasources.xml($CAT_HOME/datasources.xml)</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">data-sources</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">data-source</span> <span class="attr">id</span>=<span class="string">"cat"</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">maximum-pool-size</span>&gt;</span>3<span class="tag">&lt;/<span class="name">maximum-pool-size</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">connection-timeout</span>&gt;</span>1s<span class="tag">&lt;/<span class="name">connection-timeout</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">idle-timeout</span>&gt;</span>10m<span class="tag">&lt;/<span class="name">idle-timeout</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">statement-cache-size</span>&gt;</span>1000<span class="tag">&lt;/<span class="name">statement-cache-size</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">driver</span>&gt;</span>com.mysql.jdbc.Driver<span class="tag">&lt;/<span class="name">driver</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">url</span>&gt;</span>&lt;![CDATA[jdbc:mysql://127.0.0.1:3306/cat]]&gt;<span class="tag">&lt;/<span class="name">url</span>&gt;</span>  <span class="comment">&lt;!-- 请替换为真实数据库URL及Port  --&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">user</span>&gt;</span>root<span class="tag">&lt;/<span class="name">user</span>&gt;</span>  <span class="comment">&lt;!-- 请替换为真实数据库用户名  --&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">password</span>&gt;</span>root<span class="tag">&lt;/<span class="name">password</span>&gt;</span>  <span class="comment">&lt;!-- 请替换为真实数据库密码  --&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">connectionProperties</span>&gt;</span>&lt;![CDATA[useUnicode=true&amp;characterEncoding=UTF-8&amp;autoReconnect=true&amp;socketTimeout=120000]]&gt;<span class="tag">&lt;/<span class="name">connectionProperties</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">data-source</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">data-sources</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="步骤6：-war打包"><a href="#步骤6：-war打包" class="headerlink" title="步骤6： war打包"></a>步骤6： war打包</h4><p>官方下载：<a href="http://unidal.org/nexus/service/local/repositories/releases/content/com/dianping/cat/cat-home/3.0.0/cat-home-3.0.0.war" target="_blank" rel="noopener">http://unidal.org/nexus/service/local/repositories/releases/content/com/dianping/cat/cat-home/3.0.0/cat-home-3.0.0.war</a></p>
+<p>重命名为cat.war进行部署，注意此war是用jdk8，服务端请使用jdk8版本</p>
+<h4 id="步骤7：-war部署"><a href="#步骤7：-war部署" class="headerlink" title="步骤7： war部署"></a>步骤7： war部署</h4><ul>
+<li>将上一步打包的war包部署到本机tomcat的webapps下。</li>
+<li>启动tomcat，打开控制台的URL，<a href="http://127.0.0.1:8080/cat/s/config?op=routerConfigUpdate" target="_blank" rel="noopener">http://127.0.0.1:8080/cat/s/config?op=routerConfigUpdate</a> 默认用户名：admin 默认密码：admin 。</li>
+<li>配置客户端路由。</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">router-config</span> <span class="attr">backup-server</span>=<span class="string">"你的本机ip（不要用127.0.0.1）"</span> <span class="attr">backup-server-port</span>=<span class="string">"2280"</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">default-server</span> <span class="attr">id</span>=<span class="string">"你的本机ip（不要用127.0.0.1）"</span> <span class="attr">weight</span>=<span class="string">"1.0"</span> <span class="attr">port</span>=<span class="string">"2280"</span> <span class="attr">enable</span>=<span class="string">"true"</span>/&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">network-policy</span> <span class="attr">id</span>=<span class="string">"default"</span> <span class="attr">title</span>=<span class="string">"默认"</span> <span class="attr">block</span>=<span class="string">"false"</span> <span class="attr">server-group</span>=<span class="string">"default_group"</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;/<span class="name">network-policy</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">server-group</span> <span class="attr">id</span>=<span class="string">"default_group"</span> <span class="attr">title</span>=<span class="string">"default-group"</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">group-server</span> <span class="attr">id</span>=<span class="string">"你的本机ip（不要用127.0.0.1）"</span>/&gt;</span></span><br><span class="line">   <span class="tag">&lt;/<span class="name">server-group</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">domain</span> <span class="attr">id</span>=<span class="string">"cat"</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">group</span> <span class="attr">id</span>=<span class="string">"default"</span>&gt;</span></span><br><span class="line">         <span class="tag">&lt;<span class="name">server</span> <span class="attr">id</span>=<span class="string">"你的本机ip（不要用127.0.0.1）"</span> <span class="attr">port</span>=<span class="string">"2280"</span> <span class="attr">weight</span>=<span class="string">"1.0"</span>/&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">group</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;/<span class="name">domain</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">router-config</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>提交后，重启tomcat，访问<a href="http://127.0.0.1:8080/cat，出现如下界面，说明搭建成功。" target="_blank" rel="noopener">http://127.0.0.1:8080/cat，出现如下界面，说明搭建成功。</a></p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/4/11/16a09f9b5544833d?w=2254&amp;h=1452&amp;f=png&amp;s=214316" alt></p>
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><h4 id="安装jar包"><a href="#安装jar包" class="headerlink" title="安装jar包"></a>安装jar包</h4><p>进入cat源码包的 lib/java/jar ，将cat-client-3.0.0.jar 包 安装到本地maven仓库。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mvn install:install-file -DgroupId=com.dianping.cat -DartifactId=cat-client Dversion=3.0.0 -Dpackaging=jar -Dfile=cat-client-3.0.0.jar</span><br></pre></td></tr></table></figure>
+<h4 id="创建工程"><a href="#创建工程" class="headerlink" title="创建工程"></a>创建工程</h4><p>创建一个springboot 工程，关键代码如下。</p>
+<h5 id="pom-xml"><a href="#pom-xml" class="headerlink" title="pom.xml"></a>pom.xml</h5><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.dianping.cat<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>cat-client<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.0.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="app-properties"><a href="#app-properties" class="headerlink" title="app.properties"></a>app.properties</h4><p>需要在你的项目中创建 src/main/resources/META-INF/app.properties 文件, 并添加如下内容:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app.name=&#123;appkey&#125;</span><br></pre></td></tr></table></figure>
+<p>appkey 只能包含英文字母 (a-z, A-Z)、数字 (0-9)、下划线 (_) 和中划线 (-)</p>
+<h4 id="application-yml"><a href="#application-yml" class="headerlink" title="application.yml"></a>application.yml</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">server:</span><br><span class="line">  port: 8760</span><br><span class="line"></span><br><span class="line">spring:</span><br><span class="line">  application:</span><br><span class="line">    name: cat-simple</span><br></pre></td></tr></table></figure>
+<h4 id="启动类"><a href="#启动类" class="headerlink" title="启动类"></a>启动类</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CatSimpleApplication</span> </span>&#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run( CatSimpleApplication.class, args );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PostMapping</span>(<span class="string">"/hi"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">hi</span><span class="params">(HttpServletRequest request)</span></span>&#123;</span><br><span class="line">        String url = request.getRequestURL().toString();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 创建一个 Transaction</span></span><br><span class="line">        Transaction transaction = Cat.newTransaction( <span class="string">"URL"</span>, url );</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 处理业务</span></span><br><span class="line">            myBusiness();</span><br><span class="line">            <span class="comment">// 设置状态</span></span><br><span class="line">            transaction.setStatus(Transaction.SUCCESS);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            <span class="comment">// 设置错误状态</span></span><br><span class="line">            transaction.setStatus(e);</span><br><span class="line">            <span class="comment">// 记录错误信息</span></span><br><span class="line">            Cat.logError(e);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="comment">// 结束 Transaction</span></span><br><span class="line">            transaction.complete();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="string">"hello"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PostMapping</span>(<span class="string">"/error"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">error</span><span class="params">(HttpServletRequest request)</span></span>&#123;</span><br><span class="line">        String url = request.getRequestURL().toString();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 创建一个 Transaction</span></span><br><span class="line">        Transaction transaction = Cat.newTransaction( <span class="string">"URL"</span>, url );</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 处理业务</span></span><br><span class="line">            <span class="keyword">int</span> i = <span class="number">1</span> / <span class="number">0</span>;</span><br><span class="line">            <span class="comment">// 设置状态</span></span><br><span class="line">            transaction.setStatus(Transaction.SUCCESS);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            <span class="comment">// 设置错误状态</span></span><br><span class="line">            transaction.setStatus(e);</span><br><span class="line">            <span class="comment">// 记录错误信息</span></span><br><span class="line">            Cat.logError(e);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="comment">// 结束 Transaction</span></span><br><span class="line">            transaction.complete();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="string">"500"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">myBusiness</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//模拟业务处理的时间</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Thread.sleep( <span class="number">500</span> );</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>请求 <a href="http://localhost:8760/hi" target="_blank" rel="noopener">http://localhost:8760/hi</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -X POST  http://localhost:8760/hi</span><br></pre></td></tr></table></figure>
+<p>请求 <a href="http://localhost:8760/error" target="_blank" rel="noopener">http://localhost:8760/error</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -X POST  http://localhost:8760/error</span><br></pre></td></tr></table></figure>
+<h4 id="查看监控信息"><a href="#查看监控信息" class="headerlink" title="查看监控信息"></a>查看监控信息</h4><p>进入 cat 控制台，点击 Transaction 按钮 ，之后点击全部，会看到有哪些客户端，如图：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/4/11/16a09f9f9332e5fc?w=2254&amp;h=1452&amp;f=png&amp;s=377217" alt></p>
+<p>点击客户端 cat-simple ，出现如图：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/4/11/16a09fa22532bdbc?w=2628&amp;h=1620&amp;f=png&amp;s=338461" alt></p>
+<p>如上图，可以清晰的看到 请求的 总个数（tatal）、均值（avg）、最大/最小（max/min)、标准差（std）等，其他都比较直观，标准差稍微复杂一点，大家自己可以推演一下怎么做增量计算。那集合运算，比如95线（表示95%请求的完成时间）、999线（表示99.9%请求的完成时间）</p>
+<p>点击 “log View” 可以查看 错误信息，如图：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/4/11/16a09fa46d2ee6f3?w=2624&amp;h=1608&amp;f=png&amp;s=654971" alt></p>
+<h3 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h3><p><a href="https://github.com/gf-huanchupk/SpringCloudLearning/tree/master/chapter14" target="_blank" rel="noopener">https://github.com/gf-huanchupk/SpringCloudLearning/tree/master/chapter14</a></p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://github.com/dianping/cat/wiki" target="_blank" rel="noopener">https://github.com/dianping/cat/wiki</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Spring-Cloud/" rel="tag"># Spring Cloud</a>
+          
+            <a href="/tags/Cat/" rel="tag"># Cat</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/05/Spring-Boot-Security-OAuth2-实现支持JWT令牌的授权服务器/" rel="next" title="Spring Boot Security OAuth2 实现支持JWT令牌的授权服务器">
+                <i class="fa fa-chevron-left"></i> Spring Boot Security OAuth2 实现支持JWT令牌的授权服务器
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/avatar.jpg" alt="程序员果果">
+            
+              <p class="site-author-name" itemprop="name">程序员果果</p>
+              <div class="site-description motion-element" itemprop="description"></div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">21</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/gf-huanchupk" title="GitHub &rarr; https://github.com/gf-huanchupk" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:782969359@qq.com" title="E-Mail &rarr; mailto:782969359@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#优势"><span class="nav-number">2.</span> <span class="nav-text">优势</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#开源产品比较"><span class="nav-number">3.</span> <span class="nav-text">开源产品比较</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#快速上手"><span class="nav-number">4.</span> <span class="nav-text">快速上手</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#本地部署"><span class="nav-number">4.1.</span> <span class="nav-text">本地部署</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤1：部署tomcat"><span class="nav-number">4.1.1.</span> <span class="nav-text">步骤1：部署tomcat</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤2：程序对于-data-目录具体读写权限（重要）"><span class="nav-number">4.1.2.</span> <span class="nav-text">步骤2：程序对于/data/目录具体读写权限（重要）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤3：-配置-data-appdatas-cat-client-xml-CAT-HOME-client-xml"><span class="nav-number">4.1.3.</span> <span class="nav-text">步骤3： 配置/data/appdatas/cat/client.xml ($CAT_HOME/client.xml)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤4：-安装CAT的数据库"><span class="nav-number">4.1.4.</span> <span class="nav-text">步骤4： 安装CAT的数据库</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤5：-配置-data-appdatas-cat-datasources-xml-CAT-HOME-datasources-xml"><span class="nav-number">4.1.5.</span> <span class="nav-text">步骤5： 配置/data/appdatas/cat/datasources.xml($CAT_HOME/datasources.xml)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤6：-war打包"><span class="nav-number">4.1.6.</span> <span class="nav-text">步骤6： war打包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤7：-war部署"><span class="nav-number">4.1.7.</span> <span class="nav-text">步骤7： war部署</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试"><span class="nav-number">4.2.</span> <span class="nav-text">测试</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#安装jar包"><span class="nav-number">4.2.1.</span> <span class="nav-text">安装jar包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建工程"><span class="nav-number">4.2.2.</span> <span class="nav-text">创建工程</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#pom-xml"><span class="nav-number">4.2.2.1.</span> <span class="nav-text">pom.xml</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#app-properties"><span class="nav-number">4.2.3.</span> <span class="nav-text">app.properties</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#application-yml"><span class="nav-number">4.2.4.</span> <span class="nav-text">application.yml</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#启动类"><span class="nav-number">4.2.5.</span> <span class="nav-text">启动类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#查看监控信息"><span class="nav-number">4.2.6.</span> <span class="nav-text">查看监控信息</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#源码"><span class="nav-number">4.3.</span> <span class="nav-text">源码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-number">4.4.</span> <span class="nav-text">参考</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">程序员果果</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
