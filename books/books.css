@@ -7,3 +7,8 @@
 .douban-list a {
 	padding: 10px 10px 10px 0px;
 }
+img{
+	height: 200px;
+    width: 140px;
+    display: inline-block;
+}
