@@ -42,7 +42,7 @@ var dbapi = {
 			dbapi[typ + stus +"_SHOW"] = function (json) {
 				var mainplace = $("#"+this.opts.place);
 				if (mainplace.length ===0){
-					mainplace = $("<div/>").attr("id",this.opts.place).prependTo($(".books"));
+					mainplace = $("<div/>").attr("id",this.opts.place).prependTo($(".douban"));
 				}
 				if ($("#"+typ+stus).length === 0){
 					var title = this.defaults[typ+stus+"title"]?this.defaults[typ+stus+"title"]:
@@ -133,4 +133,4 @@ var _defaults = {
 	user:"181614271",
 	api:"0b2bdeda43b5688921839c8ecb20399b"
 }
-dbapi.show(_defaults);</script>
+dbapi.show(_defaults)</script>
