@@ -56,7 +56,7 @@ var dbapi = {
 		return this.apiurl(typ,this.opts.user,this.opts.api,stus,begin,end);
 	},
 	apiurl:function(typ,user,key,stus,begin,end){
-		var url = "https://api.douban.com/people/"+user+"/collection?cat="+typ+"&start-index="+
+		var url = "http://api.douban.com/people/"+user+"/collection?cat="+typ+"&start-index="+
 			begin+"&max-results="+end+"&status="+stus+"&alt=xd&callback=dbapi."+typ+stus+"_SHOW";
 		if (key.length > 0)
 			url += "&apikey="+key;
