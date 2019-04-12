@@ -1,9 +1,3 @@
-//批量读取豆瓣的图书和电影
-//by justin 20120316
-//http://fejustin.com
-//--dbapi.begin--
-
-var $ = jQuery;
 var dbapi = {
 	appendScript:function(url){
 		if ((url)&&(url.length > 0))
@@ -135,11 +129,9 @@ var dbapi = {
 		moviewishtitle:"想看..."
 	}
 }
-
 var _defaults = {
 	user:"181614271",
 	api:"0b2bdeda43b5688921839c8ecb20399b"
 }
 dbapi.show(_defaults);
-//--dbapi.end--
 </script>
