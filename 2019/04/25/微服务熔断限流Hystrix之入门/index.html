@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="为什么需要容错限流 复杂分布式系统通常有很多依赖，如果一个应用不能对来自依赖 故障进行隔离，那么应用本身就处在被拖垮的风险中。在一个高流量的网站中，某个单一后端一旦发生延迟，将会在数秒内导致 所有应用资源被耗尽（一个臭鸡蛋影响一篮筐）。 如秒杀、抢购、双十一等场景，在某一时间点会有爆发式的网络流量涌入，如果没有好的网络流量限制，任由流量压到后台服务实例，很有可能造成资源耗尽，服务无法响应，甚至严重">
+<meta name="keywords" content="Spring Cloud,Hystrix">
+<meta property="og:type" content="article">
+<meta property="og:title" content="微服务熔断限流Hystrix之入门">
+<meta property="og:url" content="http://yoursite.com/2019/04/25/微服务熔断限流Hystrix之入门/index.html">
+<meta property="og:site_name" content="程序员果果的博客">
+<meta property="og:description" content="为什么需要容错限流 复杂分布式系统通常有很多依赖，如果一个应用不能对来自依赖 故障进行隔离，那么应用本身就处在被拖垮的风险中。在一个高流量的网站中，某个单一后端一旦发生延迟，将会在数秒内导致 所有应用资源被耗尽（一个臭鸡蛋影响一篮筐）。 如秒杀、抢购、双十一等场景，在某一时间点会有爆发式的网络流量涌入，如果没有好的网络流量限制，任由流量压到后台服务实例，很有可能造成资源耗尽，服务无法响应，甚至严重">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/4/25/16a544e8c60d0776?w=696&h=322&f=png&s=312263">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/4/25/16a544eb9e3a923b?w=499&h=251&f=png&s=102369">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/4/25/16a544ede6ec1f67?w=1372&h=667&f=png&s=101333">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/4/25/16a544f71786e9ee?w=699&h=353&f=png&s=248884">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/4/25/16a5450d53ecc056?w=571&h=161&f=png&s=30875">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/4/25/16a54510335c9b2d?w=2032&h=612&f=png&s=327518">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/4/25/16a545127fad8637?w=2014&h=276&f=png&s=129496">
+<meta property="og:updated_time" content="2019-05-09T01:22:00.717Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="微服务熔断限流Hystrix之入门">
+<meta name="twitter:description" content="为什么需要容错限流 复杂分布式系统通常有很多依赖，如果一个应用不能对来自依赖 故障进行隔离，那么应用本身就处在被拖垮的风险中。在一个高流量的网站中，某个单一后端一旦发生延迟，将会在数秒内导致 所有应用资源被耗尽（一个臭鸡蛋影响一篮筐）。 如秒杀、抢购、双十一等场景，在某一时间点会有爆发式的网络流量涌入，如果没有好的网络流量限制，任由流量压到后台服务实例，很有可能造成资源耗尽，服务无法响应，甚至严重">
+<meta name="twitter:image" content="https://user-gold-cdn.xitu.io/2019/4/25/16a544e8c60d0776?w=696&h=322&f=png&s=312263">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/04/25/微服务熔断限流Hystrix之入门/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>微服务熔断限流Hystrix之入门 | 程序员果果的博客</title>
+  
+
+
+
+
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?48ba4ef106e9b2430083b8ec78a1831e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">程序员果果的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/25/微服务熔断限流Hystrix之入门/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="程序员果果">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="程序员果果的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">微服务熔断限流Hystrix之入门
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-25 09:15:32" itemprop="dateCreated datePublished" datetime="2019-04-25T09:15:32+08:00">2019-04-25</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-09 09:22:00" itemprop="dateModified" datetime="2019-05-09T09:22:00+08:00">2019-05-09</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/SpringCloud/" itemprop="url" rel="index"><span itemprop="name">SpringCloud</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="为什么需要容错限流"><a href="#为什么需要容错限流" class="headerlink" title="为什么需要容错限流"></a>为什么需要容错限流</h2><ul>
+<li>复杂分布式系统通常有很多依赖，如果一个应用不能对来自依赖 故障进行隔离，那么应用本身就处在被拖垮的风险中。在一个高流量的网站中，某个单一后端一旦发生延迟，将会在数秒内导致 所有应用资源被耗尽（一个臭鸡蛋影响一篮筐）。</li>
+<li>如秒杀、抢购、双十一等场景，在某一时间点会有爆发式的网络流量涌入，如果没有好的网络流量限制，任由流量压到后台服务实例，很有可能造成资源耗尽，服务无法响应，甚至严重的导致应用崩溃。</li>
+</ul>
+<h2 id="Hystrix是什么"><a href="#Hystrix是什么" class="headerlink" title="Hystrix是什么"></a>Hystrix是什么</h2><p>Hystrix 能使你的系统在出现依赖服务失效的时候，通过隔离系统所依赖的服务，防止服务级联失败，同时提供失败回退机制，更优雅地应对失效，并使你的系统能更快地从异常中恢复。</p>
+<h2 id="Hystrix能做什么"><a href="#Hystrix能做什么" class="headerlink" title="Hystrix能做什么"></a>Hystrix能做什么</h2><ul>
+<li>在通过第三方客户端访问（通常是通过网络）依赖服务出现高延迟或者失败时，为系统提供保护和控制</li>
+<li>在分布式系统中防止级联失败</li>
+<li>快速失败（Fail fast）同时能快速恢复</li>
+<li>提供失败回退（Fallback）和优雅的服务降级机制</li>
+<li>提供近似实时的监控、报警和运维控制手段</li>
+</ul>
+<h2 id="Hystrix设计原则"><a href="#Hystrix设计原则" class="headerlink" title="Hystrix设计原则"></a>Hystrix设计原则</h2><ul>
+<li>防止单个依赖耗尽容器（例如 Tomcat）内所有用户线程</li>
+<li>降低系统负载，对无法及时处理的请求快速失败（fail fast）而不是排队</li>
+<li>提供失败回退，以在必要时让失效对用户透明化</li>
+<li>使用隔离机制（例如『舱壁』/『泳道』模式，熔断器模式等）降低依赖服务对整个系统的影响</li>
+<li>针对系统服务的度量、监控和报警，提供优化以满足近似实时性的要求</li>
+<li>在 Hystrix 绝大部分需要动态调整配置并快速部署到所有应用方面，提供优化以满足快速恢复的要求</li>
+<li>能保护应用不受依赖服务的整个执行过程中失败的影响，而不仅仅是网络请求</li>
+</ul>
+<h2 id="Hystrix设计思想来源"><a href="#Hystrix设计思想来源" class="headerlink" title="Hystrix设计思想来源"></a>Hystrix设计思想来源</h2><h3 id="舱壁隔离模式"><a href="#舱壁隔离模式" class="headerlink" title="舱壁隔离模式"></a>舱壁隔离模式</h3><p>货船为了进行防止漏水和火灾的扩散,会将货仓分隔为多个，当发生灾害时，将所在货仓进行隔离就可以降低整艘船的风险。</p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/4/25/16a544e8c60d0776?w=696&amp;h=322&amp;f=png&amp;s=312263" alt></p>
+<h3 id="断路器模式"><a href="#断路器模式" class="headerlink" title="断路器模式"></a>断路器模式</h3><p>熔断器就像家里的保险丝，当电流过载了就会跳闸，不过Hystrix的熔断机制相对复杂一些。</p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/4/25/16a544eb9e3a923b?w=499&amp;h=251&amp;f=png&amp;s=102369" alt></p>
+<p>熔断器开关由关闭到打开的状态转换是通过当前服务健康状况和设定阈值比较决定的.</p>
+<ul>
+<li>当熔断器开关关闭时，请求被允许通过熔断器。如果当前健康状况高于设定阈值，开关继续保持关闭。如果当前健康状况低于设定阈值，开关则切换为打开状态。</li>
+<li>当熔断器开关打开时，请求被禁止通过。</li>
+<li>当熔断器开关处于打开状态，经过一段时间后，熔断器会自动进入半开状态，这时熔断器只允许一个请求通过。当该请求调用成功时，熔断器恢复到关闭状态。若该请求失败，熔断器继续保持打开状态， 接下来的请求被禁止通过。</li>
+</ul>
+<h2 id="Hystrix工作流程"><a href="#Hystrix工作流程" class="headerlink" title="Hystrix工作流程"></a>Hystrix工作流程</h2><h3 id="官网原图"><a href="#官网原图" class="headerlink" title="官网原图"></a>官网原图</h3><p><img src="https://user-gold-cdn.xitu.io/2019/4/25/16a544ede6ec1f67?w=1372&amp;h=667&amp;f=png&amp;s=101333" alt></p>
+<h3 id="中文版"><a href="#中文版" class="headerlink" title="中文版"></a>中文版</h3><p><img src="https://user-gold-cdn.xitu.io/2019/4/25/16a544f71786e9ee?w=699&amp;h=353&amp;f=png&amp;s=248884" alt></p>
+<h3 id="流程说明"><a href="#流程说明" class="headerlink" title="流程说明"></a>流程说明</h3><ol>
+<li>每次调用创建一个新的HystrixCommand,把依赖调用封装在run()方法中.</li>
+<li>执行execute()/queue做同步或异步调用.</li>
+<li>当前调用是否已被缓存，是则直接返回结果，否则进入步骤 4</li>
+<li>判断熔断器(circuit-breaker)是否打开,如果打开跳到步骤 8,进行降级策略,如果关闭进入步骤 5</li>
+<li>判断线程池/队列/信号量是否跑满，如果跑满进入降级步骤8,否则继续后续步骤 6</li>
+<li>调用HystrixCommand的run方法.运行依赖逻辑 <ul>
+<li>6.1. 调用是否出现异常，否：继续，是进入步骤8， </li>
+<li>6.2. 调用是否超时，否：返回调用结果，是进入步骤8</li>
+</ul>
+</li>
+<li>搜集5、6步骤所有的运行状态(成功, 失败, 拒绝,超时)上报给熔断器，用于统计从而判断熔断器状态</li>
+<li>getFallback()降级逻辑.四种触发getFallback调用情况（图中步骤8的箭头来源）：<br>返回执行成功结果</li>
+</ol>
+<h2 id="两种资源隔离模式"><a href="#两种资源隔离模式" class="headerlink" title="两种资源隔离模式"></a>两种资源隔离模式</h2><h3 id="线程池隔离模式"><a href="#线程池隔离模式" class="headerlink" title="线程池隔离模式"></a>线程池隔离模式</h3><p>使用一个线程池来存储当前的请求，线程池对请求作处理，设置任务返回处理超时时间，堆积的请求堆积入线程池队列。这种方式需要为每个依赖的服务申请线程池，有一定的资源消耗，好处是可以应对突发流量（流量洪峰来临时，处理不完可将数据存储到线程池队里慢慢处理）。</p>
+<h3 id="信号量隔离模式"><a href="#信号量隔离模式" class="headerlink" title="信号量隔离模式"></a>信号量隔离模式</h3><p>使用一个原子计数器（或信号量）来记录当前有多少个线程在运行，请求来先判断计数器的数值，若超过设置的最大线程个数则丢弃改类型的新请求，若不超过则执行计数操作请求来计数器+1，请求返回计数器-1。这种方式是严格的控制线程且立即返回模式，无法应对突发流量（流量洪峰来临时，处理的线程超过数量，其他的请求会直接返回，不继续去请求依赖的服务）。</p>
+<h3 id="线程池隔离模式-VS-信号量隔离模式"><a href="#线程池隔离模式-VS-信号量隔离模式" class="headerlink" title="线程池隔离模式 VS 信号量隔离模式"></a>线程池隔离模式 VS 信号量隔离模式</h3><p><img src="https://user-gold-cdn.xitu.io/2019/4/25/16a5450d53ecc056?w=571&amp;h=161&amp;f=png&amp;s=30875" alt></p>
+<h2 id="Hystrix主要配置项"><a href="#Hystrix主要配置项" class="headerlink" title="Hystrix主要配置项"></a>Hystrix主要配置项</h2><p><img src="https://user-gold-cdn.xitu.io/2019/4/25/16a54510335c9b2d?w=2032&amp;h=612&amp;f=png&amp;s=327518" alt></p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/4/25/16a545127fad8637?w=2014&amp;h=276&amp;f=png&amp;s=129496" alt></p>
+<h2 id="快速上手"><a href="#快速上手" class="headerlink" title="快速上手"></a>快速上手</h2><h3 id="pom-xml"><a href="#pom-xml" class="headerlink" title="pom.xml"></a>pom.xml</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.netflix.hystrix<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>hystrix-core<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.5.12<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.netflix.hystrix<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>hystrix-metrics-event-stream<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.5.12<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.netflix.hystrix<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>hystrix-javanica<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.5.12<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="HystrixConfig"><a href="#HystrixConfig" class="headerlink" title="HystrixConfig"></a>HystrixConfig</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HystrixConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 声明一个HystrixCommandAspect代理类，现拦截HystrixCommand的功能</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> HystrixCommandAspect <span class="title">hystrixCommandAspect</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> HystrixCommandAspect();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="HelloService"><a href="#HelloService" class="headerlink" title="HelloService"></a>HelloService</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@HystrixCommand</span>(fallbackMethod = <span class="string">"helloError"</span>,</span><br><span class="line">            commandProperties = &#123;</span><br><span class="line">                    <span class="meta">@HystrixProperty</span>(name = <span class="string">"execution.isolation.strategy"</span>, value = <span class="string">"THREAD"</span>),</span><br><span class="line">                    <span class="meta">@HystrixProperty</span>(name = <span class="string">"execution.isolation.thread.timeoutInMilliseconds"</span>, value = <span class="string">"1000"</span>),</span><br><span class="line">                    <span class="meta">@HystrixProperty</span>(name = <span class="string">"circuitBreaker.enabled"</span>, value = <span class="string">"true"</span>),</span><br><span class="line">                    <span class="meta">@HystrixProperty</span>(name = <span class="string">"circuitBreaker.requestVolumeThreshold"</span>, value = <span class="string">"2"</span>)&#125;,</span><br><span class="line">            threadPoolProperties = &#123;</span><br><span class="line">                    <span class="meta">@HystrixProperty</span>(name = <span class="string">"coreSize"</span>, value = <span class="string">"5"</span>),</span><br><span class="line">                    <span class="meta">@HystrixProperty</span>(name = <span class="string">"maximumSize"</span>, value = <span class="string">"5"</span>),</span><br><span class="line">                    <span class="meta">@HystrixProperty</span>(name = <span class="string">"maxQueueSize"</span>, value = <span class="string">"10"</span>)</span><br><span class="line">            &#125;)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">sayHello</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Thread.sleep( <span class="number">15000</span> );</span><br><span class="line">            <span class="keyword">return</span> <span class="string">"Hello "</span> + name + <span class="string">" !"</span>;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">helloError</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"服务器繁忙，请稍后访问~"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="启动类"><a href="#启动类" class="headerlink" title="启动类"></a>启动类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HystrixSimpleApplication</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> HelloService helloService;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run( HystrixSimpleApplication.class, args );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/hi"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">hi</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> helloService.sayHello( name );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><p>访问 <a href="http://localhost:80809/hi?name=zhangsan" target="_blank" rel="noopener">http://localhost:80809/hi?name=zhangsan</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -X GET -d 'name=zhangsan' http://localhost:8080/hi</span><br></pre></td></tr></table></figure>
+<p>返回</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">服务器繁忙，请稍后访问~</span><br></pre></td></tr></table></figure>
+<h3 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h3><p><a href="https://github.com/gf-huanchupk/SpringCloudLearning/tree/master/chapter16" target="_blank" rel="noopener">https://github.com/gf-huanchupk/SpringCloudLearning/tree/master/chapter16</a></p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://github.com/Netflix/Hystrix/wiki" target="_blank" rel="noopener">https://github.com/Netflix/Hystrix/wiki</a></p>
+<p><a href="https://blog.51cto.com/snowtiger/2057092" target="_blank" rel="noopener">https://blog.51cto.com/snowtiger/2057092</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Spring-Cloud/" rel="tag"># Spring Cloud</a>
+          
+            <a href="/tags/Hystrix/" rel="tag"># Hystrix</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/16/调用链监控-CAT-之-URL埋点实践/" rel="next" title="调用链监控 CAT 之 URL埋点实践">
+                <i class="fa fa-chevron-left"></i> 调用链监控 CAT 之 URL埋点实践
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/05/05/微服务熔断限流Hystrix之Dashboard/" rel="prev" title="微服务熔断限流Hystrix之Dashboard">
+                微服务熔断限流Hystrix之Dashboard <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/avatar.jpg" alt="程序员果果">
+            
+              <p class="site-author-name" itemprop="name">程序员果果</p>
+              <div class="site-description motion-element" itemprop="description"></div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/gf-huanchupk" title="GitHub &rarr; https://github.com/gf-huanchupk" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:782969359@qq.com" title="E-Mail &rarr; mailto:782969359@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么需要容错限流"><span class="nav-number">1.</span> <span class="nav-text">为什么需要容错限流</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hystrix是什么"><span class="nav-number">2.</span> <span class="nav-text">Hystrix是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hystrix能做什么"><span class="nav-number">3.</span> <span class="nav-text">Hystrix能做什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hystrix设计原则"><span class="nav-number">4.</span> <span class="nav-text">Hystrix设计原则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hystrix设计思想来源"><span class="nav-number">5.</span> <span class="nav-text">Hystrix设计思想来源</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#舱壁隔离模式"><span class="nav-number">5.1.</span> <span class="nav-text">舱壁隔离模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#断路器模式"><span class="nav-number">5.2.</span> <span class="nav-text">断路器模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hystrix工作流程"><span class="nav-number">6.</span> <span class="nav-text">Hystrix工作流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#官网原图"><span class="nav-number">6.1.</span> <span class="nav-text">官网原图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#中文版"><span class="nav-number">6.2.</span> <span class="nav-text">中文版</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#流程说明"><span class="nav-number">6.3.</span> <span class="nav-text">流程说明</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#两种资源隔离模式"><span class="nav-number">7.</span> <span class="nav-text">两种资源隔离模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#线程池隔离模式"><span class="nav-number">7.1.</span> <span class="nav-text">线程池隔离模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#信号量隔离模式"><span class="nav-number">7.2.</span> <span class="nav-text">信号量隔离模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程池隔离模式-VS-信号量隔离模式"><span class="nav-number">7.3.</span> <span class="nav-text">线程池隔离模式 VS 信号量隔离模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hystrix主要配置项"><span class="nav-number">8.</span> <span class="nav-text">Hystrix主要配置项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#快速上手"><span class="nav-number">9.</span> <span class="nav-text">快速上手</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#pom-xml"><span class="nav-number">9.1.</span> <span class="nav-text">pom.xml</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HystrixConfig"><span class="nav-number">9.2.</span> <span class="nav-text">HystrixConfig</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HelloService"><span class="nav-number">9.3.</span> <span class="nav-text">HelloService</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启动类"><span class="nav-number">9.4.</span> <span class="nav-text">启动类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试"><span class="nav-number">9.5.</span> <span class="nav-text">测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#源码"><span class="nav-number">9.6.</span> <span class="nav-text">源码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">10.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">程序员果果</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="简介Hystrix Dashboard是一款针对Hystrix进行实时监控的工具，通过Hystrix Dashboard可以直观地看到各Hystrix Command的请求响应时间，请求成功率等数据。 快速上手工程说明   工程名 端口 作用     eureka-server 8761 注册中心   service-hi 8762 服务提供者   service-consumer 8763 服务">
+<meta name="keywords" content="Spring Cloud,Hystrix">
+<meta property="og:type" content="article">
+<meta property="og:title" content="微服务熔断限流Hystrix之Dashboard">
+<meta property="og:url" content="http://yoursite.com/2019/05/05/微服务熔断限流Hystrix之Dashboard/index.html">
+<meta property="og:site_name" content="程序员果果的博客">
+<meta property="og:description" content="简介Hystrix Dashboard是一款针对Hystrix进行实时监控的工具，通过Hystrix Dashboard可以直观地看到各Hystrix Command的请求响应时间，请求成功率等数据。 快速上手工程说明   工程名 端口 作用     eureka-server 8761 注册中心   service-hi 8762 服务提供者   service-consumer 8763 服务">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/5/6/16a8aa02dca23203?w=2486&h=694&f=png&s=372645">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/5/6/16a8aa04f255e5e0?w=2496&h=1414&f=png&s=472781">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/5/6/16a8aa07eed1dcd5?w=2178&h=1000&f=png&s=255549">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/5/6/16a8aa0a50a6a717?w=2098&h=1166&f=png&s=572191">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/5/6/16a8aa0c5493b29f?w=2186&h=1018&f=png&s=297395">
+<meta property="og:updated_time" content="2019-05-09T01:24:49.730Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="微服务熔断限流Hystrix之Dashboard">
+<meta name="twitter:description" content="简介Hystrix Dashboard是一款针对Hystrix进行实时监控的工具，通过Hystrix Dashboard可以直观地看到各Hystrix Command的请求响应时间，请求成功率等数据。 快速上手工程说明   工程名 端口 作用     eureka-server 8761 注册中心   service-hi 8762 服务提供者   service-consumer 8763 服务">
+<meta name="twitter:image" content="https://user-gold-cdn.xitu.io/2019/5/6/16a8aa02dca23203?w=2486&h=694&f=png&s=372645">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/05/05/微服务熔断限流Hystrix之Dashboard/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>微服务熔断限流Hystrix之Dashboard | 程序员果果的博客</title>
+  
+
+
+
+
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?48ba4ef106e9b2430083b8ec78a1831e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">程序员果果的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/05/微服务熔断限流Hystrix之Dashboard/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="程序员果果">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="程序员果果的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">微服务熔断限流Hystrix之Dashboard
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-05 09:22:22" itemprop="dateCreated datePublished" datetime="2019-05-05T09:22:22+08:00">2019-05-05</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-09 09:24:49" itemprop="dateModified" datetime="2019-05-09T09:24:49+08:00">2019-05-09</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/SpringCloud/" itemprop="url" rel="index"><span itemprop="name">SpringCloud</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Hystrix Dashboard是一款针对Hystrix进行实时监控的工具，通过Hystrix Dashboard可以直观地看到各Hystrix Command的请求响应时间，请求成功率等数据。</p>
+<h2 id="快速上手"><a href="#快速上手" class="headerlink" title="快速上手"></a>快速上手</h2><h3 id="工程说明"><a href="#工程说明" class="headerlink" title="工程说明"></a>工程说明</h3><table>
+<thead>
+<tr>
+<th style="text-align:left">工程名</th>
+<th style="text-align:right">端口</th>
+<th style="text-align:center">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">eureka-server</td>
+<td style="text-align:right">8761</td>
+<td style="text-align:center">注册中心</td>
+</tr>
+<tr>
+<td style="text-align:left">service-hi</td>
+<td style="text-align:right">8762</td>
+<td style="text-align:center">服务提供者</td>
+</tr>
+<tr>
+<td style="text-align:left">service-consumer</td>
+<td style="text-align:right">8763</td>
+<td style="text-align:center">服务消费者</td>
+</tr>
+</tbody>
+</table>
+<h3 id="核心代码"><a href="#核心代码" class="headerlink" title="核心代码"></a>核心代码</h3><h4 id="eureka-server-工程"><a href="#eureka-server-工程" class="headerlink" title="eureka-server 工程"></a>eureka-server 工程</h4><h4 id="pom-xml"><a href="#pom-xml" class="headerlink" title="pom.xml"></a>pom.xml</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-netflix-eureka-server<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h5 id="application-yml"><a href="#application-yml" class="headerlink" title="application.yml"></a>application.yml</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">server:</span><br><span class="line">  port: 8761</span><br><span class="line">eureka:</span><br><span class="line">  instance:</span><br><span class="line">    hostname: localhost</span><br><span class="line">  client:</span><br><span class="line">    register-with-eureka: false</span><br><span class="line">    fetch-registry: false</span><br><span class="line">    service-url:</span><br><span class="line">      defaultZone: http://$&#123;eureka.instance.hostname&#125;:/$&#123;server.port&#125;/eureka/</span><br><span class="line">spring:</span><br><span class="line">  application:</span><br><span class="line">    name: eureka-server</span><br></pre></td></tr></table></figure>
+<h4 id="启动类"><a href="#启动类" class="headerlink" title="启动类"></a>启动类</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@EnableEurekaServer</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EurekaServerApplication</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run( EurekaServerApplication.class, args );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="service-hi-工程"><a href="#service-hi-工程" class="headerlink" title="service-hi 工程"></a>service-hi 工程</h3><h4 id="pom-xml-1"><a href="#pom-xml-1" class="headerlink" title="pom.xml"></a>pom.xml</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-netflix-eureka-client<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="application-yml-1"><a href="#application-yml-1" class="headerlink" title="application.yml"></a>application.yml</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">server:</span><br><span class="line">  port: 8762</span><br><span class="line"></span><br><span class="line">spring:</span><br><span class="line">  application:</span><br><span class="line">    name: service-hi</span><br><span class="line">eureka:</span><br><span class="line">  client:</span><br><span class="line">    service-url:</span><br><span class="line">      defaultZone: http://localhost:8761/eureka/</span><br></pre></td></tr></table></figure>
+<h4 id="HelloController"><a href="#HelloController" class="headerlink" title="HelloController"></a>HelloController</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/hi"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">hi</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"hello ~"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/hey"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">hey</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"hey ~"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/oh"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">oh</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"ah ~"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/ah"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">ah</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//模拟接口1/3的概率超时</span></span><br><span class="line">        Random rand = <span class="keyword">new</span> Random();</span><br><span class="line">        <span class="keyword">int</span> randomNum = rand.nextInt(<span class="number">3</span>) + <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span> (<span class="number">3</span> == randomNum) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                Thread.sleep( <span class="number">3000</span> );</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"来了老弟~"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="启动类-1"><a href="#启动类-1" class="headerlink" title="启动类"></a>启动类</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@EnableEurekaClient</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ServiceHiApplication</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run( ServiceHiApplication.class, args );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="service-consumer-工程"><a href="#service-consumer-工程" class="headerlink" title="service-consumer 工程"></a>service-consumer 工程</h3><h4 id="pom-xml-2"><a href="#pom-xml-2" class="headerlink" title="pom.xml"></a>pom.xml</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-netflix-eureka-client<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-netflix-ribbon<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-actuator<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-netflix-hystrix<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-netflix-hystrix-dashboard<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="application-yml-2"><a href="#application-yml-2" class="headerlink" title="application.yml"></a>application.yml</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">server:</span><br><span class="line">  port: 8763</span><br><span class="line"></span><br><span class="line">  tomcat:</span><br><span class="line">    uri-encoding: UTF-8</span><br><span class="line">    max-threads: 1000</span><br><span class="line">    max-connections: 20000</span><br><span class="line"></span><br><span class="line">spring:</span><br><span class="line">  application:</span><br><span class="line">    name: service-consumer</span><br><span class="line">eureka:</span><br><span class="line">  client:</span><br><span class="line">    service-url:</span><br><span class="line">      defaultZone: http://localhost:8761/eureka/</span><br><span class="line"></span><br><span class="line">management:</span><br><span class="line">  endpoints:</span><br><span class="line">    web:</span><br><span class="line">      exposure:</span><br><span class="line">        include: &quot;*&quot;</span><br><span class="line">      cors:</span><br><span class="line">        allowed-origins: &quot;*&quot;</span><br><span class="line">        allowed-methods: &quot;*&quot;</span><br></pre></td></tr></table></figure>
+<h4 id="HelloService"><a href="#HelloService" class="headerlink" title="HelloService"></a>HelloService</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> RestTemplate restTemplate;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 简单用法</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@HystrixCommand</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">hiService</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> restTemplate.getForObject(<span class="string">"http://SERVICE-HI/hi"</span> , String.class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 定制超时</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@HystrixCommand</span>(commandProperties = &#123;</span><br><span class="line">            <span class="meta">@HystrixProperty</span>(name = <span class="string">"execution.isolation.thread.timeoutInMilliseconds"</span>, value = <span class="string">"30000"</span>) &#125;)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">heyService</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> restTemplate.getForObject(<span class="string">"http://SERVICE-HI/hey"</span> , String.class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 定制降级方法</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@HystrixCommand</span>(fallbackMethod = <span class="string">"getFallback"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">ahService</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> restTemplate.getForObject(<span class="string">"http://SERVICE-HI/ah"</span> , String.class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 定制线程池隔离策略</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@HystrixCommand</span>(fallbackMethod = <span class="string">"getFallback"</span>,</span><br><span class="line">            threadPoolKey = <span class="string">"studentServiceThreadPool"</span>,</span><br><span class="line">            threadPoolProperties = &#123;</span><br><span class="line">                    <span class="meta">@HystrixProperty</span>(name=<span class="string">"coreSize"</span>, value=<span class="string">"30"</span>),</span><br><span class="line">                    <span class="meta">@HystrixProperty</span>(name=<span class="string">"maxQueueSize"</span>, value=<span class="string">"50"</span>)</span><br><span class="line">            &#125;</span><br><span class="line">    )</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">ohService</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> restTemplate.getForObject(<span class="string">"http://SERVICE-HI/oh"</span> , String.class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getFallback</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Oh , sorry , error !"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="HelloController-1"><a href="#HelloController-1" class="headerlink" title="HelloController"></a>HelloController</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> HelloService helloService;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/hi"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">hi</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> helloService.hiService();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/hey"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">hey</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> helloService.heyService();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/oh"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">oh</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> helloService.ohService();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/ah"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">ah</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> helloService.ahService();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="启动类-2"><a href="#启动类-2" class="headerlink" title="启动类"></a>启动类</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@EnableEurekaClient</span></span><br><span class="line"><span class="meta">@EnableHystrixDashboard</span></span><br><span class="line"><span class="meta">@EnableHystrix</span></span><br><span class="line"><span class="meta">@EnableCircuitBreaker</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ServiceConsumerApplication</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run( ServiceConsumerApplication.class, args );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@LoadBalanced</span></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> RestTemplate <span class="title">restTemplate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> RestTemplate();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Hystrix-Dashboard-的使用"><a href="#Hystrix-Dashboard-的使用" class="headerlink" title="Hystrix Dashboard 的使用"></a>Hystrix Dashboard 的使用</h2><h3 id="JSON格式监控信息"><a href="#JSON格式监控信息" class="headerlink" title="JSON格式监控信息"></a>JSON格式监控信息</h3><p>先访问<a href="http://localhost:8762/hi" target="_blank" rel="noopener">http://localhost:8762/hi</a><br>再打开<a href="http://localhost:8763/actuator/hystrix.stream，可以看到一些具体的数据：" target="_blank" rel="noopener">http://localhost:8763/actuator/hystrix.stream，可以看到一些具体的数据：</a></p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/5/6/16a8aa02dca23203?w=2486&amp;h=694&amp;f=png&amp;s=372645" alt></p>
+<h3 id="Hystrix仪表盘监控信息"><a href="#Hystrix仪表盘监控信息" class="headerlink" title="Hystrix仪表盘监控信息"></a>Hystrix仪表盘监控信息</h3><p>单纯的查看json数据，很难分析出结果，所以，要在Hystrix仪表盘中来查看这一段json，在hystrix仪表盘中输入监控地址进行监控：<br>打开仪表盘地址：<a href="http://localhost:8762/hystrix" target="_blank" rel="noopener">http://localhost:8762/hystrix</a></p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/5/6/16a8aa04f255e5e0?w=2496&amp;h=1414&amp;f=png&amp;s=472781" alt></p>
+<p>在界面依次输入：<a href="http://localhost:8763/actuator/hystrix.stream" target="_blank" rel="noopener">http://localhost:8763/actuator/hystrix.stream</a> 、2000 、service-consumer；点确定。</p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/5/6/16a8aa07eed1dcd5?w=2178&amp;h=1000&amp;f=png&amp;s=255549" alt></p>
+<h3 id="Hystrix仪表盘指标含义"><a href="#Hystrix仪表盘指标含义" class="headerlink" title="Hystrix仪表盘指标含义"></a>Hystrix仪表盘指标含义</h3><p><img src="https://user-gold-cdn.xitu.io/2019/5/6/16a8aa0a50a6a717?w=2098&amp;h=1166&amp;f=png&amp;s=572191" alt></p>
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><p>编一个测试脚本curl.sh</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">while true;</span><br><span class="line">do</span><br><span class="line">curl "http://localhost:8763/hi";</span><br><span class="line">curl "http://localhost:8763/hey";</span><br><span class="line">curl "http://localhost:8763/oh";</span><br><span class="line">curl "http://localhost:8763/ah";</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+<p>执行测试脚本，查看Hystrix仪表盘：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/5/6/16a8aa0c5493b29f?w=2186&amp;h=1018&amp;f=png&amp;s=297395" alt></p>
+<p>可以看出 ahService 因为模拟了1/3的概率超时，所以监控中呈现了30%左右的错误百分比。</p>
+<h2 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h2><p><a href="https://github.com/gf-huanchupk/SpringCloudLearning/tree/master/chapter17" target="_blank" rel="noopener">https://github.com/gf-huanchupk/SpringCloudLearning/tree/master/chapter17</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Spring-Cloud/" rel="tag"># Spring Cloud</a>
+          
+            <a href="/tags/Hystrix/" rel="tag"># Hystrix</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/25/微服务熔断限流Hystrix之入门/" rel="next" title="微服务熔断限流Hystrix之入门">
+                <i class="fa fa-chevron-left"></i> 微服务熔断限流Hystrix之入门
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/05/08/微服务熔断限流Hystrix之流聚合/" rel="prev" title="微服务熔断限流Hystrix之流聚合">
+                微服务熔断限流Hystrix之流聚合 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/avatar.jpg" alt="程序员果果">
+            
+              <p class="site-author-name" itemprop="name">程序员果果</p>
+              <div class="site-description motion-element" itemprop="description"></div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/gf-huanchupk" title="GitHub &rarr; https://github.com/gf-huanchupk" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:782969359@qq.com" title="E-Mail &rarr; mailto:782969359@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#快速上手"><span class="nav-number">2.</span> <span class="nav-text">快速上手</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#工程说明"><span class="nav-number">2.1.</span> <span class="nav-text">工程说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#核心代码"><span class="nav-number">2.2.</span> <span class="nav-text">核心代码</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#eureka-server-工程"><span class="nav-number">2.2.1.</span> <span class="nav-text">eureka-server 工程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#pom-xml"><span class="nav-number">2.2.2.</span> <span class="nav-text">pom.xml</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#application-yml"><span class="nav-number">2.2.2.1.</span> <span class="nav-text">application.yml</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#启动类"><span class="nav-number">2.2.3.</span> <span class="nav-text">启动类</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#service-hi-工程"><span class="nav-number">2.3.</span> <span class="nav-text">service-hi 工程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#pom-xml-1"><span class="nav-number">2.3.1.</span> <span class="nav-text">pom.xml</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#application-yml-1"><span class="nav-number">2.3.2.</span> <span class="nav-text">application.yml</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#HelloController"><span class="nav-number">2.3.3.</span> <span class="nav-text">HelloController</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#启动类-1"><span class="nav-number">2.3.4.</span> <span class="nav-text">启动类</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#service-consumer-工程"><span class="nav-number">2.4.</span> <span class="nav-text">service-consumer 工程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#pom-xml-2"><span class="nav-number">2.4.1.</span> <span class="nav-text">pom.xml</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#application-yml-2"><span class="nav-number">2.4.2.</span> <span class="nav-text">application.yml</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#HelloService"><span class="nav-number">2.4.3.</span> <span class="nav-text">HelloService</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#HelloController-1"><span class="nav-number">2.4.4.</span> <span class="nav-text">HelloController</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#启动类-2"><span class="nav-number">2.4.5.</span> <span class="nav-text">启动类</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hystrix-Dashboard-的使用"><span class="nav-number">3.</span> <span class="nav-text">Hystrix Dashboard 的使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#JSON格式监控信息"><span class="nav-number">3.1.</span> <span class="nav-text">JSON格式监控信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Hystrix仪表盘监控信息"><span class="nav-number">3.2.</span> <span class="nav-text">Hystrix仪表盘监控信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Hystrix仪表盘指标含义"><span class="nav-number">3.3.</span> <span class="nav-text">Hystrix仪表盘指标含义</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#测试"><span class="nav-number">4.</span> <span class="nav-text">测试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码"><span class="nav-number">5.</span> <span class="nav-text">源码</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">程序员果果</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
